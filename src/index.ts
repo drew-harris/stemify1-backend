@@ -8,6 +8,7 @@ import fetch from "node-fetch";
 import { setupMongo, getDB } from "./db";
 import { getToken, getSongData } from "./spotify";
 import * as Mongo from "mongodb";
+import { rmSync } from "fs";
 
 async function main() {
   try {
@@ -38,6 +39,19 @@ async function main() {
       } catch (error) {
         res.status(500).send(error);
       }
+    });
+
+    app.get("/songs", async (req, res) => {
+      const db = await getDB();
+      db.collection("songs")
+        .find({})
+        .toArray((err, docs) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.json(docs);
+          }
+        });
     });
 
     app.post("/upload", multer.any(), async (req, res) => {
