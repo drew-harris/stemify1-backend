@@ -48,7 +48,7 @@ async function main() {
           return a.fieldname.localeCompare(b.fieldname);
         });
         const folderName =
-          slugify(data.title, { lower: true }) +
+          slugify(data.name, { lower: true }) +
           "-" +
           id.toString().substring(18, 25);
 
