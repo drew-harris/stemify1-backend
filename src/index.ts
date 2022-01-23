@@ -87,6 +87,7 @@ async function main() {
           album: data.album,
           previewUrl: data.previewUrl,
           albumArt: data.albumArt,
+          trackNumber: data.trackNumber,
           bpm: data.bpm,
           bass: urls[0],
           drums: urls[1],
