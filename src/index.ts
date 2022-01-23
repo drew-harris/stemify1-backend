@@ -8,7 +8,7 @@ import fetch from "node-fetch";
 
 async function main() {
   try {
-    const client = new Mongo.MongoClient(process.env.MONGODB_URI);
+    const client = new Mongo.MongoClient(`mongodb+srv://${process.env.MONGODB_URI}@cluster0.osjjf.mongodb.net/prod?retryWrites=true&w=majority`);
     await client.connect();
     const db = client.db("prod");
 
