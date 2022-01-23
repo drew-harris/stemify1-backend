@@ -4,7 +4,7 @@ let _client: Mongo.MongoClient = null;
 
 export async function setupMongo() {
   _client = new Mongo.MongoClient(
-    `mongodb+srv://${process.env.MONGODB_URI}@cluster0.osjjf.mongodb.net/prod?retryWrites=true&w=majority`
+    `mongodb+srv://${process.env.MONGODB_URI}@stemsharemetadata1.1sxnt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
   );
   await _client.connect();
   _db = _client.db("prod");
