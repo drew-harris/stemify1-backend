@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const Multer = require("multer");
+var cors = require("cors");
 import slugify from "slugify";
 import { uploadFile } from "./storage";
 import fetch from "node-fetch";
@@ -13,6 +14,7 @@ async function main() {
     await setupMongo();
     const app = express();
 
+    app.use(cors());
     const PORT = process.env.PORT || 3000;
 
     app.use(express.json());
