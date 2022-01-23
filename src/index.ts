@@ -22,7 +22,7 @@ async function main() {
     const multer = Multer({
       storage: Multer.memoryStorage(),
       limits: {
-        fileSize: 190 * 1024 * 1024, // no larger than 190mb, you can change as needed.
+        fileSize: 900 * 1024 * 1024, // no larger than 190mb, you can change as needed.
       },
     });
 
