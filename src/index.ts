@@ -5,7 +5,7 @@ import slugify from "slugify";
 import { uploadFile } from "./storage";
 import fetch from "node-fetch";
 import { setupMongo, getDB } from "./db";
-import { getToken } from "./spotify";
+import { getToken, getSongData } from "./spotify";
 import * as Mongo from "mongodb";
 
 async function main() {
@@ -26,6 +26,16 @@ async function main() {
 
     app.get("/", (_, res) => {
       res.send("Hello World!");
+    });
+
+    app.get("/data/:name", async (req, res) => {
+      const name = req.params.name;
+      try {
+        const data = await getSongData(name);
+        res.json(data);
+      } catch (error) {
+        res.status(500).send(error);
+      }
     });
 
     app.post("/upload", multer.any(), async (req, res) => {
@@ -54,10 +64,13 @@ async function main() {
 
         const song = {
           _id: id,
-          title: data.title,
+          name: data.name,
+          spotifyId: data.spotifyId,
+          spotifyAlbumId: data.spotifyAlbumId,
           artist: data.artist,
           album: data.album,
           previewUrl: data.previewUrl,
+          albumArt: data.albumArt,
           bpm: data.bpm,
           bass: urls[0],
           drums: urls[1],
@@ -76,9 +89,8 @@ async function main() {
       }
     });
 
-    app.listen(PORT, async () => {
+    app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
-      console.log(await getToken());
     });
   } catch (err) {
     console.log(err);
