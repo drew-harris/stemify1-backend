@@ -3,15 +3,14 @@ const express = require("express");
 const Multer = require("multer");
 import slugify from "slugify";
 import { uploadFile } from "./storage";
-import * as Mongo from "mongodb";
 import fetch from "node-fetch";
+import { setupMongo, getDB } from "./db";
+import { getToken } from "./spotify";
+import * as Mongo from "mongodb";
 
 async function main() {
   try {
-    const client = new Mongo.MongoClient(`mongodb+srv://${process.env.MONGODB_URI}@cluster0.osjjf.mongodb.net/prod?retryWrites=true&w=majority`);
-    await client.connect();
-    const db = client.db("prod");
-
+    await setupMongo();
     const app = express();
 
     const PORT = process.env.PORT || 3000;
@@ -31,7 +30,6 @@ async function main() {
 
     app.post("/upload", multer.any(), async (req, res) => {
       try {
-        console.log(await getToken());
         let id = new Mongo.ObjectId();
         const data = JSON.parse(req.body.data);
         let files = req.files.sort((a, b) => {
@@ -67,6 +65,8 @@ async function main() {
           vocals: urls[3],
         };
 
+        const db = await getDB();
+
         await db.collection("songs").insertOne(song);
 
         res.json(song);
@@ -76,31 +76,12 @@ async function main() {
       }
     });
 
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       console.log(`Server is running on port ${PORT}`);
+      console.log(await getToken());
     });
   } catch (err) {
     console.log(err);
-  }
-}
-
-async function getToken(): Promise<string> {
-  try {
-    const result = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: "Basic " + process.env.SPOTIFY_BASE64,
-      },
-      body: "grant_type=client_credentials",
-    });
-    if (!result.ok) {
-      throw new Error(result.statusText);
-    }
-    const data: any = await result.json();
-    return data.access_token;
-  } catch (error) {
-    console.log(error);
   }
 }
 
