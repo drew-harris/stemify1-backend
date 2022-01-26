@@ -135,7 +135,11 @@ async function main() {
           .sort({ timeSubmitted: 1 })
           .limit(1)
           .toArray();
-        res.json(result[0]);
+        if (result.length === 0) {
+          res.status(404).send("No tickets found");
+        } else {
+          res.json(result[0]);
+        }
       } catch (error) {
         res.status(500).json({
           error: error.message,
