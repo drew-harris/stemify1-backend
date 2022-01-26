@@ -100,21 +100,24 @@ export async function getSongData(filename) {
     throw new Error("Unable to get song data");
   }
   const trackData = data.tracks.items[0];
-  const outputData = {
-    name: trackData.name,
-    spotifyId: trackData.id,
-    spotifyAlbumId: trackData.album.id,
-    artist: trackData.artists[0].name,
-    album: trackData.album.name,
-    trackNumber: trackData.track_number,
-    previewUrl: trackData.preview_url,
-    albumArt: trackData.album.images[0].url,
+
+  const betterOutput = {
+    title: trackData.name,
+    metadata: {
+      albumId: trackData.album.id,
+      spotifyId: trackData.id,
+      albumTitle: trackData.album.name,
+      albumArt: trackData.album.images[0].url,
+      artist: trackData.artists[0].name,
+      artistId: trackData.artists[0].id,
+      previewUrl: trackData.preview_url,
+    },
     bpm: null,
   };
 
-  outputData.bpm = await getBpm(outputData.spotifyId);
+  betterOutput.bpm = await getBpm(betterOutput.metadata.spotifyId);
   console.log(data.tracks.items[0]);
-  return outputData;
+  return betterOutput;
 }
 
 async function getBpm(spotifyId: string) {

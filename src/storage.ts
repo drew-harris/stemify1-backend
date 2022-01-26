@@ -2,14 +2,17 @@ import * as CloudStorage from "@google-cloud/storage";
 const storage = new CloudStorage.Storage();
 import slugify from "slugify";
 
-const songBucket = storage.bucket("stemshare-songs");
+const songBucket = storage.bucket("stem-share-demucs-input");
 
 export async function uploadFile(
   file: Express.Multer.File,
-  folderName: string
+  folderName: string,
+  extension: string
 ): Promise<any> {
   const promise = new Promise((resolve, reject) => {
-    const blob = songBucket.file(`${folderName}/${slugify(file.originalname)}`);
+    const blob = songBucket.file(
+      `${folderName}/${slugify("input." + extension)}`
+    );
     const blobStream = blob.createWriteStream();
     blobStream.on("error", (err) => {
       throw err;

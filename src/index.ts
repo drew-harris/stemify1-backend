@@ -4,11 +4,9 @@ const Multer = require("multer");
 var cors = require("cors");
 import slugify from "slugify";
 import { uploadFile } from "./storage";
-import fetch from "node-fetch";
 import { setupMongo, getDB } from "./db";
-import { getToken, getSongData } from "./spotify";
+import { getSongData } from "./spotify";
 import * as Mongo from "mongodb";
-import { rmSync } from "fs";
 
 async function main() {
   try {
@@ -23,7 +21,7 @@ async function main() {
     const multer = Multer({
       storage: Multer.memoryStorage(),
       limits: {
-        fileSize: 900 * 1024 * 1024, // no larger than 190mb, you can change as needed.
+        fileSize: 32 * 1024 * 1024, // no larger than 32mb, you can change as needed.
       },
     });
 
@@ -44,7 +42,9 @@ async function main() {
     app.get("/songs", async (req, res) => {
       const db = await getDB();
       db.collection("songs")
-        .find({})
+        .find({
+          complete: true,
+        })
         .toArray((err, docs) => {
           if (err) {
             res.status(500).send(err);
@@ -54,6 +54,137 @@ async function main() {
         });
     });
 
+    app.post("/ticket/file", multer.single("file"), async (req, res) => {
+      console.log(req.body);
+      const data = JSON.parse(req.body.data);
+      const songId = new Mongo.ObjectId();
+      const ticketId = new Mongo.ObjectId();
+      const extension = req.file.originalname.split(".").pop();
+      const slug =
+        slugify(data.title, { lower: true }) +
+        "-" +
+        songId.toString().substring(18, 25);
+      //TODO: validate data
+
+      if (!data.title) {
+        res.status(400).send("Missing title");
+      }
+
+      const song = {
+        _id: songId,
+        timeSubmitted: Date.now(),
+        songSlug: slug,
+        title: data.title,
+        colors: data.colors || ["#FF0000", "#0000FF"],
+        metadata: {
+          albumId: data.metadata.albumId || null,
+          albumTitle: data.metadata.albumTitle || null,
+          albumArt: data.metadata.albumArt || null,
+          artist: data.metadata.artist || null,
+          artistId: data.metadata.artistId || null,
+          previewUrl: data.metadata.previewUrl || null,
+        },
+        bpm: data.bpm || 120,
+
+        vocals: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/vocals.${extension}`,
+        bass: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
+        drums: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/drums.${extension}`,
+        other: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
+
+        extension: extension,
+        complete: false,
+        ticketId: ticketId,
+      };
+
+      const ticket = {
+        _id: ticketId,
+        timeSubmitted: Date.now(),
+        slug: slug,
+        extension: song.extension,
+        complete: false,
+      };
+
+      try {
+        const db = await getDB();
+        //TODO Promise all or something
+        await db.collection("songs").insertOne(song);
+        await db.collection("tickets").insertOne(ticket);
+        req.file.name = "input" + song.extension;
+        await uploadFile(req.file, slug, song.extension);
+      } catch (error) {
+        res.status(500).json({
+          error: error.message,
+          message: "Unable to submit ticket",
+        });
+      }
+      console.log(song);
+
+      res.json({
+        ticketId: ticketId,
+      });
+    });
+
+    app.get("/demucs/ticket", async (req, res) => {
+      try {
+        const db = await getDB();
+        const result = await db
+          .collection("tickets")
+          .find({
+            complete: false,
+          })
+          .sort({ timeSubmitted: 1 })
+          .limit(1)
+          .toArray();
+        res.json(result[0]);
+      } catch (error) {
+        res.status(500).json({
+          error: error.message,
+          message: "Unable to get ticket",
+        });
+      }
+    });
+
+    app.post("/demucs/ticket/complete/:id", async (req, res) => {
+      const db = await getDB();
+      await db.collection("tickets").findOneAndUpdate(
+        {
+          _id: new Mongo.ObjectId(req.params.id),
+        },
+        {
+          $set: {
+            complete: true,
+          },
+        }
+      );
+
+      await db.collection("songs").findOneAndUpdate(
+        {
+          ticketId: new Mongo.ObjectId(req.params.id),
+        },
+        {
+          $set: {
+            complete: true,
+          },
+        }
+      );
+
+      res.json({
+        message: "Ticket marked as complete",
+      });
+    });
+
+    app.get("/ticket/:id", async (req, res) => {
+      const db = await getDB();
+      const result = await db.collection("tickets").findOne({
+        _id: new Mongo.ObjectId(req.params.id),
+      });
+
+      res.json({
+        ticket: result,
+      });
+    });
+
+    // DECPRECATED
     app.post("/upload", multer.any(), async (req, res) => {
       try {
         let id = new Mongo.ObjectId();
@@ -66,18 +197,6 @@ async function main() {
           "-" +
           id.toString().substring(18, 25);
 
-        const bassPromise = uploadFile(files[0], folderName);
-        const drumsPromise = uploadFile(files[1], folderName);
-        const instrPromise = uploadFile(files[2], folderName);
-        const vocalsPromise = uploadFile(files[3], folderName);
-
-        const urls = await Promise.all([
-          bassPromise,
-          drumsPromise,
-          instrPromise,
-          vocalsPromise,
-        ]);
-
         const song = {
           _id: id,
           name: data.name,
@@ -89,10 +208,6 @@ async function main() {
           albumArt: data.albumArt,
           trackNumber: data.trackNumber,
           bpm: data.bpm,
-          bass: urls[0],
-          drums: urls[1],
-          instr: urls[2],
-          vocals: urls[3],
         };
 
         const db = await getDB();
