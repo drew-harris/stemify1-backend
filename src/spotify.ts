@@ -109,6 +109,7 @@ export async function getSongData(filename) {
       spotifyId: trackData.id,
       albumTitle: trackData.album.name,
       albumArt: trackData.album.images[0].url,
+      albumName: trackData.album.name,
       artist: trackData.artists[0].name,
       artistId: trackData.artists[0].id,
       previewUrl: trackData.preview_url,
