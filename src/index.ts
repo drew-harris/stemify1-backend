@@ -7,6 +7,7 @@ import { uploadFile } from "./storage";
 import { setupMongo, getDB } from "./db";
 import { getSongData } from "./spotify";
 import * as Mongo from "mongodb";
+import { time } from "console";
 
 async function main() {
   try {
@@ -57,9 +58,26 @@ async function main() {
         });
     });
 
+    app.get("/queue", async (req, res) => {
+      try {
+        const db = await getDB();
+        const songs = await db
+          .collection("songs")
+          .find({
+            complete: false,
+          })
+          .toArray();
+
+        res.json(songs);
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    });
+
     app.post("/ticket/file", multer.single("file"), async (req, res) => {
       console.log(req.body);
       const data = JSON.parse(req.body.data);
+
       const songId = new Mongo.ObjectId();
       const ticketId = new Mongo.ObjectId();
       const extension = req.file.originalname.split(".").pop();
@@ -104,6 +122,7 @@ async function main() {
         timeSubmitted: Date.now(),
         slug: slug,
         extension: song.extension,
+        created: Date.now(),
         complete: false,
       };
 
