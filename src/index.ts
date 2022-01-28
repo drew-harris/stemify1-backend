@@ -45,6 +45,9 @@ async function main() {
         .find({
           complete: true,
         })
+        .sort({
+          timeSubmitted: -1,
+        })
         .toArray((err, docs) => {
           if (err) {
             res.status(500).send(err);
