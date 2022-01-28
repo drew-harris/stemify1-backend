@@ -87,7 +87,7 @@ async function main() {
         bpm: data.bpm || 120,
 
         vocals: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/vocals.${extension}`,
-        bass: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
+        bass: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/bass.${extension}`,
         drums: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/drums.${extension}`,
         other: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
 
