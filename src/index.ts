@@ -98,6 +98,7 @@ async function main() {
         title: data.title,
         colors: data.colors || ["#FF0000", "#0000FF"],
         metadata: {
+          trackId: data.metadata.trackId || null,
           albumId: data.metadata.albumId || null,
           albumTitle: data.metadata.albumTitle || null,
           albumArt: data.metadata.albumArt || null,

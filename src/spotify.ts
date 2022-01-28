@@ -104,6 +104,7 @@ export async function getSongData(filename) {
   const betterOutput = {
     title: trackData.name,
     metadata: {
+      trackId: trackData.id,
       albumId: trackData.album.id,
       spotifyId: trackData.id,
       albumTitle: trackData.album.name,
