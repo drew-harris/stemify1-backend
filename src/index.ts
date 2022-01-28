@@ -77,6 +77,17 @@ async function main() {
     app.post("/ticket/file", multer.single("file"), async (req, res) => {
       console.log(req.body);
       const data = JSON.parse(req.body.data);
+      const db = await getDB();
+      const searchedSong = await db
+        .collection("songs")
+        .find({
+          trackId: data.trackId,
+        })
+        .toArray();
+
+      if (searchedSong[0]) {
+        res.status(400).send("Song already exists");
+      }
 
       const songId = new Mongo.ObjectId();
       const ticketId = new Mongo.ObjectId();
