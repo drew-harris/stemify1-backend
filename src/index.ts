@@ -157,19 +157,46 @@ async function main() {
     app.get("/demucs/ticket", async (req, res) => {
       try {
         const db = await getDB();
+        // Find pending ticket started more than an hour ago
+        const firstTry = await db.collection("tickets").findOne({
+          complete: false,
+          started: {
+            $lt: new Date(Date.now() - 3600000),
+          },
+          pending: true,
+        });
+        if (firstTry) {
+          res.json(firstTry);
+          return;
+        }
+
+        // Find normal ticket
         const result = await db
           .collection("tickets")
           .find({
             complete: false,
+            pending: false,
           })
           .sort({ timeSubmitted: 1 })
           .limit(1)
           .toArray();
         if (result.length === 0) {
           res.status(404).send("No tickets found");
+          return;
         } else {
           res.json(result[0]);
         }
+        const ticket = await db.collection("tickets").findOneAndUpdate(
+          {
+            ticketId: result[0]._id,
+          },
+          {
+            $set: {
+              pending: true,
+              started: new Date(),
+            },
+          }
+        );
       } catch (error) {
         res.status(500).json({
           error: error.message,
@@ -187,6 +214,7 @@ async function main() {
         {
           $set: {
             complete: true,
+            pending: false,
           },
         }
       );
@@ -208,14 +236,17 @@ async function main() {
     });
 
     app.get("/ticket/:id", async (req, res) => {
-      const db = await getDB();
-      const result = await db.collection("tickets").findOne({
-        _id: new Mongo.ObjectId(req.params.id),
-      });
-
-      res.json({
-        ticket: result,
-      });
+      try {
+        const db = await getDB();
+        const result = await db.collection("songs").findOne({
+          ticketId: new Mongo.ObjectId(req.params.id),
+        });
+        if (result.complete) {
+          res.json({ song: null });
+        } else {
+          res.json({ song: result });
+        }
+      } catch (error) {}
     });
 
     // DECPRECATED
