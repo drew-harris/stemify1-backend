@@ -28,3 +28,7 @@ export async function uploadFile(
   });
   return promise;
 }
+
+export function getBucket() {
+  return songBucket;
+}

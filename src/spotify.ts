@@ -47,11 +47,11 @@ export async function newToken(): Promise<string> {
   }
 }
 
-export async function getSongData(filename) {
+export async function getSongData(filename, filter) {
   let token = await getToken();
   console.log(token);
   const paramsObj = {
-    q: getSongName(filename),
+    q: filter ? getSongName(filename) : filename,
     type: "track",
     limit: "1",
     market: "US",
@@ -69,7 +69,6 @@ export async function getSongData(filename) {
       }
     );
     if (!(await result).ok) {
-      console.log(result);
       let err = new StatusError(result.statusText);
       err.status = result.status;
       throw err;
@@ -105,6 +104,7 @@ export async function getSongData(filename) {
     title: trackData.name,
     metadata: {
       trackId: trackData.id,
+      trackNum: trackData.track_number,
       albumId: trackData.album.id,
       spotifyId: trackData.id,
       albumTitle: trackData.album.name,
@@ -118,7 +118,6 @@ export async function getSongData(filename) {
   };
 
   betterOutput.bpm = await getBpm(betterOutput.metadata.spotifyId);
-  console.log(data.tracks.items[0]);
   return betterOutput;
 }
 

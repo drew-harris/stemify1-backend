@@ -20,11 +20,13 @@
     "cors": "^2.8.5",
     "dotenv": "^14.2.0",
     "express": "^4.17.2",
+    "fluent-ffmpeg": "^2.1.2",
     "mongodb": "^4.3.1",
     "multer": "^1.4.4",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.15",
-    "slugify": "^1.6.5"
+    "slugify": "^1.6.5",
+    "ytdl-core": "^4.10.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.10",

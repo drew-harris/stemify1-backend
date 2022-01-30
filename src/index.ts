@@ -3,11 +3,14 @@ const express = require("express");
 const Multer = require("multer");
 var cors = require("cors");
 import slugify from "slugify";
-import { uploadFile } from "./storage";
+import { uploadFile, getBucket } from "./storage";
 import { setupMongo, getDB } from "./db";
 import { getSongData } from "./spotify";
 import * as Mongo from "mongodb";
-import { time } from "console";
+import * as yt from "./youtube";
+import * as ytdl from "ytdl-core";
+import * as songs from "./songs";
+import * as fs from "fs";
 
 async function main() {
   try {
@@ -22,7 +25,7 @@ async function main() {
     const multer = Multer({
       storage: Multer.memoryStorage(),
       limits: {
-        fileSize: 32 * 1024 * 1024, // no larger than 32mb, you can change as needed.
+        fileSize: 39 * 1024 * 1024, // no larger than 32mb, you can change as needed.
       },
     });
 
@@ -33,14 +36,24 @@ async function main() {
     app.get("/data/:name", async (req, res) => {
       const name = req.params.name;
       try {
-        const data = await getSongData(name);
+        const data = await getSongData(name, true);
         res.json(data);
       } catch (error) {
         res.status(500).send(error);
       }
     });
 
-    app.get("/songs", async (req, res) => {
+    app.post("/data", async (req, res) => {
+      try {
+        const url = req.body.url;
+        const info = await yt.getInfo(url);
+        res.json(info);
+      } catch (error) {
+        res.status(404).send(error.message);
+      }
+    });
+
+    app.get("/songs", async (_, res) => {
       const db = await getDB();
       db.collection("songs")
         .find({
@@ -58,7 +71,7 @@ async function main() {
         });
     });
 
-    app.get("/queue", async (req, res) => {
+    app.get("/queue", async (_, res) => {
       try {
         const db = await getDB();
         const songs = await db
@@ -74,78 +87,60 @@ async function main() {
       }
     });
 
+    app.post("/ticket/youtube", multer.none(), async (req, res) => {
+      let data;
+      try {
+        data = JSON.parse(req.body.data);
+      } catch (error) {
+        res.status(500).send("Could not get song data");
+        return;
+      }
+
+      // Set song in database
+      let song;
+      try {
+        song = await songs.makeSong(data, "mp3");
+      } catch (error) {
+        res.status(500).send(error.message);
+      }
+
+      res.json({
+        ticketId: song.ticketId,
+      });
+      console.log("Uploading song...");
+      try {
+        let blob = await getBucket().file(`${song.songSlug}/input.mp3`);
+        const blobStream = blob.createWriteStream();
+
+        await ytdl
+          .default(req.body.url, { filter: "audioonly" })
+          .pipe(blobStream);
+        blobStream.on("finish", async () => {
+          console.log("DONE");
+        });
+      } catch (error) {
+        res.status(500).send(error.message);
+      }
+    });
+
     app.post("/ticket/file", multer.single("file"), async (req, res) => {
-      console.log(req.body);
       const data = JSON.parse(req.body.data);
-      const db = await getDB();
-      const searchedSong = await db
-        .collection("songs")
-        .find({
-          trackId: data.trackId,
-        })
-        .toArray();
-
-      if (searchedSong[0]) {
-        res.status(400).send("Song already exists");
-      }
-
-      const songId = new Mongo.ObjectId();
-      const ticketId = new Mongo.ObjectId();
-      const extension = req.file.originalname.split(".").pop();
-      const slug =
-        slugify(data.title, { lower: true }) +
-        "-" +
-        songId.toString().substring(18, 25);
-      //TODO: validate data
-
-      if (!data.title) {
-        res.status(400).send("Missing title");
-      }
-
-      const song = {
-        _id: songId,
-        timeSubmitted: Date.now(),
-        songSlug: slug,
-        title: data.title,
-        colors: data.colors || ["#FF0000", "#0000FF"],
-        metadata: {
-          trackId: data.metadata.trackId || null,
-          albumId: data.metadata.albumId || null,
-          albumTitle: data.metadata.albumTitle || null,
-          albumArt: data.metadata.albumArt || null,
-          albumName: data.metadata.albumName || null,
-          artist: data.metadata.artist || null,
-          artistId: data.metadata.artistId || null,
-          previewUrl: data.metadata.previewUrl || null,
-        },
-        bpm: data.bpm || 120,
-
-        vocals: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/vocals.${extension}`,
-        bass: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/bass.${extension}`,
-        drums: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/drums.${extension}`,
-        other: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
-
-        extension: extension,
-        complete: false,
-        ticketId: ticketId,
-      };
-
-      const ticket = {
-        _id: ticketId,
-        timeSubmitted: Date.now(),
-        slug: slug,
-        extension: song.extension,
-        created: Date.now(),
-        complete: false,
-      };
 
       try {
-        const db = await getDB();
+        await songs.checkForSongs(data);
+      } catch (error) {
+        res.status(500).send(error.message);
+        return;
+      }
+
+      const extension = req.file.originalname.split(".").pop();
+
+      const song = await songs.makeSong(data, extension);
+
+      try {
         //TODO Promise all or something
-        await db.collection("songs").insertOne(song);
-        await db.collection("tickets").insertOne(ticket);
-        req.file.name = "input" + song.extension;
-        await uploadFile(req.file, slug, song.extension);
+        req.file.name = "input." + extension;
+        await uploadFile(req.file, song.songSlug, song.extension);
       } catch (error) {
         res.status(500).json({
           error: error.message,
@@ -155,7 +150,7 @@ async function main() {
       console.log(song);
 
       res.json({
-        ticketId: ticketId,
+        ticketId: song.ticketId,
       });
     });
 
