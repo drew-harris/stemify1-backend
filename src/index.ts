@@ -49,6 +49,7 @@ async function main() {
         const info = await yt.getInfo(url);
         res.json(info);
       } catch (error) {
+        console.log(error);
         res.status(404).send(error.message);
       }
     });
