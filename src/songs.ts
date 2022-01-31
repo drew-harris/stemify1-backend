@@ -68,6 +68,7 @@ export async function makeSong(data: any, extension: string) {
     timeSubmitted: Date.now(),
     slug: slug,
     extension: song.extension,
+    pending: false,
     created: Date.now(),
     complete: false,
   };
