@@ -95,6 +95,12 @@ async function main() {
         res.status(500).send("Could not get song data");
         return;
       }
+      try {
+        await songs.checkForSongs(data);
+      } catch (error) {
+        res.status(500).send(error.message);
+        return;
+      }
 
       // Set song in database
       let song;
@@ -112,6 +118,7 @@ async function main() {
         await ytdl
           .default(req.body.url, { filter: "audioonly" })
           .pipe(blobStream);
+
         blobStream.on("finish", async () => {
           console.log("DONE");
           res.json({
