@@ -10,10 +10,9 @@ export async function getInfo(url: string) {
   let songData = null;
   console.log(info);
   if (info?.media?.song) {
-    songData = await spotify.getSongData(
-      info.media.song + " " + info.media.artist,
-      false
-    );
+    const queryTitle = info.media.song;
+    const queryArtist = info.media.artist || "";
+    songData = await spotify.getSongData(queryTitle + " " + queryArtist, false);
   } else {
     songData = await spotify.getSongData(info.title, false);
   }
