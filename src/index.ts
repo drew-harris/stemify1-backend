@@ -104,9 +104,6 @@ async function main() {
         res.status(500).send(error.message);
       }
 
-      res.json({
-        ticketId: song.ticketId,
-      });
       console.log("Uploading song...");
       try {
         let blob = await getBucket().file(`${song.songSlug}/input.mp3`);
@@ -117,13 +114,18 @@ async function main() {
           .pipe(blobStream);
         blobStream.on("finish", async () => {
           console.log("DONE");
+          res.json({
+            ticketId: song.ticketId,
+          });
         });
 
         blobStream.on("error", (err) => {
           console.log(err);
+          res.status(500).send("There was an error uploading the song");
         });
       } catch (error) {
         console.log(error);
+        res.status(500).send("There was an error uploading the song");
       }
     });
 
