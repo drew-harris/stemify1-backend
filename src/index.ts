@@ -118,8 +118,12 @@ async function main() {
         blobStream.on("finish", async () => {
           console.log("DONE");
         });
+
+        blobStream.on("error", (err) => {
+          console.log(err);
+        });
       } catch (error) {
-        res.status(500).send(error.message);
+        console.log(error);
       }
     });
 
