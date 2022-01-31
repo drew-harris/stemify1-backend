@@ -6,6 +6,10 @@ import slugify from "slugify";
  * Will throw error if songID is already in database
  */
 export async function checkForSongs(songData: any) {
+  // Can't check for duplicates with no trackID
+  if (!songData.metadata.trackId) {
+    return;
+  }
   const db = await getDB();
   const searchedSong = await db
     .collection("songs")
