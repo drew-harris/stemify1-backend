@@ -72,6 +72,27 @@ async function main() {
         });
     });
 
+    app.post("/songs/search", async (req, res) => {
+      const query = req.body.query;
+      if (!query) {
+        res.status(400).send("No query");
+      }
+      try {
+        console.log(query);
+        const db = await getDB();
+        const results = await db
+          .collection("songs")
+          .aggregate([
+            { $match: { $text: { $search: query } } },
+            { $sort: { score: { $meta: "textScore" } } },
+          ])
+          .toArray();
+        res.json(results);
+      } catch (error) {
+        res.status(500).send(error);
+      }
+    });
+
     app.get("/queue", async (_, res) => {
       try {
         const db = await getDB();
