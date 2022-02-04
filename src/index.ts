@@ -73,6 +73,21 @@ async function main() {
         });
     });
 
+    app.get("/album/id/:id", async (req, res) => {
+      try {
+        const db = await getDB();
+        db.collection("songs")
+          .find({
+            "metadata.albumId": req.params.id,
+          })
+          .sort({
+            "metadata.trackNumber": 1,
+          });
+      } catch (error) {
+        res.status(500).send("There was an error getting the album");
+      }
+    });
+
     app.post("/songs/search", async (req, res) => {
       const query = req.body.query;
       if (!query) {
@@ -190,49 +205,49 @@ async function main() {
       });
     });
 
-    app.get("/demucs/ticket", async (req, res) => {
+    app.get("/demucs/ticket", async (_, res) => {
       try {
         const db = await getDB();
         // Find pending ticket started more than an hour ago
         const firstTry = await db.collection("tickets").findOne({
           complete: false,
           started: {
-            $lt: new Date(Date.now() - 3600000),
+            // More than ten minutes ago
+            $lt: new Date(Date.now() - 600000),
           },
           pending: true,
         });
+
         if (firstTry) {
           res.json(firstTry);
           return;
         }
 
-        // Find normal ticket
-        const result = await db
-          .collection("tickets")
-          .find({
-            complete: false,
-            pending: false,
-          })
-          .sort({ timeSubmitted: 1 })
-          .limit(1)
-          .toArray();
-        if (result.length === 0) {
-          res.status(404).send("No tickets found");
-          return;
-        } else {
-          res.json(result[0]);
-        }
         const ticket = await db.collection("tickets").findOneAndUpdate(
           {
-            ticketId: result[0]._id,
+            complete: false,
+            pending: false,
+            // oldest first
           },
           {
             $set: {
               pending: true,
               started: new Date(),
             },
+          },
+          {
+            sort: {
+              timeSubmitted: 1,
+            },
           }
         );
+
+        if (!ticket) {
+          res.status(404).send("No tickets found");
+          return;
+        } else {
+          res.json(ticket.value);
+        }
       } catch (error) {
         res.status(500).json({
           error: error.message,

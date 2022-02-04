@@ -71,6 +71,7 @@ export async function makeSong(data: any, extension: string) {
     _id: ticketId,
     timeSubmitted: Date.now(),
     slug: slug,
+    started: null,
     extension: song.extension,
     pending: false,
     created: Date.now(),
