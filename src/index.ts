@@ -63,7 +63,7 @@ async function main() {
         .sort({
           timeSubmitted: -1,
         })
-        .limit(75)
+        .limit(150)
         .toArray((err, docs) => {
           if (err) {
             res.status(500).send(err);
