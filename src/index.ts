@@ -10,7 +10,6 @@ import * as Mongo from "mongodb";
 import * as yt from "./youtube";
 import * as ytdl from "ytdl-core";
 import * as songs from "./songs";
-import * as fs from "fs";
 
 async function main() {
   try {
@@ -74,16 +73,45 @@ async function main() {
         });
     });
 
-    app.get("/album/id/:id", async (req, res) => {
+    app.post("/artist", async (req, res) => {
       try {
+        let filter;
+        if (req.body.id) {
+          filter = { "metadata.artistId": req.body.id || "zzzzz" };
+        } else {
+          filter = { "metadata.artist": req.body.name };
+        }
         const db = await getDB();
-        db.collection("songs")
-          .find({
-            "metadata.albumId": req.params.id,
-          })
+        const discog = await db
+          .collection("songs")
+          .find(filter)
           .sort({
             "metadata.trackNumber": 1,
-          });
+          })
+          .toArray();
+        res.json(discog);
+      } catch (error) {
+        res.status(500).send("There was an error getting the album");
+      }
+    });
+
+    app.post("/album", async (req, res) => {
+      try {
+        let filter;
+        if (req.body.id) {
+          filter = { "metadata.albumId": req.body.id || "zzzzz" };
+        } else {
+          filter = { "metadata.albumTitle": req.body.name };
+        }
+        const db = await getDB();
+        const album = await db
+          .collection("songs")
+          .find(filter)
+          .sort({
+            "metadata.trackNumber": 1,
+          })
+          .toArray();
+        res.json(album);
       } catch (error) {
         res.status(500).send("There was an error getting the album");
       }
