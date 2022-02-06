@@ -50,7 +50,6 @@ export async function makeSong(data: any, extension: string) {
       albumId: data.metadata.albumId || null,
       albumTitle: data.metadata.albumTitle || null,
       albumArt: data.metadata.albumArt || null,
-      albumName: data.metadata.albumName || null,
       artist: data.metadata.artist || null,
       artistId: data.metadata.artistId || null,
       previewUrl: data.metadata.previewUrl || null,
