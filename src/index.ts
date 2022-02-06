@@ -63,6 +63,7 @@ async function main() {
         .sort({
           timeSubmitted: -1,
         })
+        // TODO: Change this back
         .limit(350)
         .toArray((err, docs) => {
           if (err) {
