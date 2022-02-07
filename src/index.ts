@@ -73,6 +73,28 @@ async function main() {
         });
     });
 
+    app.get("/songs/p/:page", async (req, res) => {
+      const page = req.params.page;
+      const db = await getDB();
+      db.collection("songs")
+        .find({
+          complete: true,
+        })
+        .sort({
+          timeSubmitted: -1,
+        })
+        // TODO: Change this back
+        .limit(100)
+        .skip(100 * page)
+        .toArray((err, docs) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.json(docs);
+          }
+        });
+    });
+
     app.post("/artist", async (req, res) => {
       try {
         let filter;
@@ -87,6 +109,7 @@ async function main() {
           .find(filter)
           .sort({
             "metadata.albumArt": 1,
+            "metadata.trackNum": 1,
           })
           .toArray();
         res.json(discog);
