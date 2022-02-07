@@ -86,7 +86,7 @@ async function main() {
           .collection("songs")
           .find(filter)
           .sort({
-            "metadata.trackNumber": 1,
+            "metadata.albumArt": 1,
           })
           .toArray();
         res.json(discog);
@@ -108,7 +108,7 @@ async function main() {
           .collection("songs")
           .find(filter)
           .sort({
-            "metadata.trackNumber": 1,
+            "metadata.trackNum": 1,
           })
           .toArray();
         res.json(album);
@@ -327,43 +327,6 @@ async function main() {
           res.json({ song: result });
         }
       } catch (error) {}
-    });
-
-    // DECPRECATED
-    app.post("/upload", multer.any(), async (req, res) => {
-      try {
-        let id = new Mongo.ObjectId();
-        const data = JSON.parse(req.body.data);
-        let files = req.files.sort((a, b) => {
-          return a.fieldname.localeCompare(b.fieldname);
-        });
-        const folderName =
-          slugify(data.name, { lower: true }) +
-          "-" +
-          id.toString().substring(18, 25);
-
-        const song = {
-          _id: id,
-          name: data.name,
-          spotifyId: data.spotifyId,
-          spotifyAlbumId: data.spotifyAlbumId,
-          artist: data.artist,
-          album: data.album,
-          previewUrl: data.previewUrl,
-          albumArt: data.albumArt,
-          trackNumber: data.trackNumber,
-          bpm: data.bpm,
-        };
-
-        const db = await getDB();
-
-        await db.collection("songs").insertOne(song);
-
-        res.json(song);
-      } catch (err) {
-        console.error(err);
-        res.status(500).send(err);
-      }
     });
 
     app.listen(PORT, () => {
