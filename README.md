@@ -7,7 +7,7 @@
   _id: MONGODB ID - THE ID OF THE TICKET,
   slug : STRING - used for upload and download ex: "chanel-238sv8"
   extension: STRING - ex: "mp3"
-  created: time
+  timeSubmitted: time
   complete: boolean;
 }
 ```
