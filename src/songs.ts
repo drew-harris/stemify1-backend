@@ -1,4 +1,4 @@
-import { setupMongo, getDB } from "./db";
+import { getDB } from "./db";
 import * as Mongo from "mongodb";
 import slugify from "slugify";
 
@@ -63,6 +63,7 @@ export async function makeSong(data: any, extension: string) {
 
     extension: extension || "mp3",
     complete: false,
+    approved: false,
     ticketId: ticketId,
   };
 
@@ -73,7 +74,6 @@ export async function makeSong(data: any, extension: string) {
     started: null,
     extension: song.extension,
     pending: false,
-    created: Date.now(),
     complete: false,
   };
 
@@ -87,3 +87,5 @@ export async function makeSong(data: any, extension: string) {
     throw new Error("Unabe to submit ticket");
   }
 }
+
+export async function getTrackNum(trackId: string) {}
