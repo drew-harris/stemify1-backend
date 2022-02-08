@@ -110,9 +110,7 @@ async function main() {
     app.get("/trackmigration", async (_, res) => {
       try {
         const db = await getDB();
-        await db
-          .collection("songs")
-          .updateMany({}, { $set: { youtubeUrl: null } });
+        await db.collection("songs").updateMany({}, { $set: { downloads: 0 } });
         res.send("Done");
       } catch (error) {
         console.log(error);

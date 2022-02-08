@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { setupMongo, getDB } from "../db";
+import * as mongo from "mongodb";
 const router = Router();
 
 router.get("/", async (_, res) => {
@@ -66,6 +67,31 @@ router.post("/search", async (req, res) => {
     res.json(results);
   } catch (error) {
     res.status(500).send(error);
+  }
+});
+
+router.post("/download/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      res.status(400).send("No id");
+    }
+    const db = await getDB();
+    db.collection("songs").updateOne(
+      {
+        _id: new mongo.ObjectId(id),
+      },
+      {
+        $set: {
+          downloadCount: {
+            $inc: 1,
+          },
+        },
+      }
+    );
+    res.send("ok");
+  } catch (error) {
+    res.status(500).send("Could not mark as downloaded");
   }
 });
 

@@ -47,6 +47,7 @@ export async function makeSong(
     timeSubmitted: Date.now(),
     songSlug: slug,
     title: data.title,
+    downloads: 0,
     colors: data.colors || ["#FF0000", "#0000FF"],
     metadata: {
       trackId: data.metadata.trackId || null,
