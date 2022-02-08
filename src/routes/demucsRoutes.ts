@@ -4,7 +4,7 @@ import * as Mongo from "mongodb";
 
 const router = Router();
 
-router.get("/demucs/ticket", async (_, res) => {
+router.get("/ticket", async (_, res) => {
   try {
     const db = await getDB();
     // Find pending ticket started more than an hour ago
@@ -55,7 +55,7 @@ router.get("/demucs/ticket", async (_, res) => {
   }
 });
 
-router.post("/demucs/ticket/complete/:id", async (req, res) => {
+router.post("/ticket/complete/:id", async (req, res) => {
   const db = await getDB();
   await db.collection("tickets").findOneAndUpdate(
     {

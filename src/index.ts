@@ -8,6 +8,7 @@ import { router as dataRouter } from "./routes/dataRoutes";
 import { router as songRouter } from "./routes/songRoutes";
 import { router as demucsRouter } from "./routes/demucsRoutes";
 import { router as ticketRouter } from "./routes/ticketRoutes";
+import { router as adminRouter } from "./routes/adminRoutes";
 
 async function main() {
   try {
@@ -23,6 +24,7 @@ async function main() {
     app.use("/songs", songRouter);
     app.use("/demucs", demucsRouter);
     app.use("/ticket", ticketRouter);
+    app.use("/admin", adminRouter);
 
     app.get("/", (_, res) => {
       res.send("Hello World!");
