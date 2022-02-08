@@ -80,9 +80,22 @@ router.get("/:id", async (req, res) => {
         timeSubmitted: { $lt: result.timeSubmitted },
       });
       console.log(await cursor.count());
+
+      // Find started less than 20 minutes ago
+      const latest = await db
+        .collection("tickets")
+        .find({
+          started: { $gt: new Date(new Date().getTime() - 5 * 60 * 1000) },
+        })
+        .limit(1)
+        .toArray();
+      console.log(latest);
+      let active = latest.length > 0 ? true : false;
+
       res.json({
         song: null,
         lineLength: await cursor.count(),
+        demucsRunning: active,
       });
     } else {
       res.json({
