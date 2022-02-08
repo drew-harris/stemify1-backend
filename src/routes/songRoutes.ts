@@ -24,6 +24,43 @@ router.get("/", async (_, res) => {
     });
 });
 
+router.get("/howmany", async (_, res) => {
+  try {
+    const db = await getDB();
+    let info = {
+      total: 0,
+      inQueue: 0,
+      approved: 0,
+      newToday: "WIP",
+      totalDownloads: 0,
+    };
+
+    info.total = await db.collection("songs").countDocuments();
+    info.inQueue = await db.collection("songs").countDocuments({
+      complete: false,
+    });
+    info.approved = await db.collection("songs").countDocuments({
+      approved: true,
+    });
+    const downloads = await db
+      .collection("songs")
+      .aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$downloads" },
+          },
+        },
+      ])
+      .toArray();
+    console.log(downloads);
+    info.totalDownloads = downloads[0].total;
+    res.json(info);
+  } catch (error) {
+    res.status(500).send("Could not get song count");
+  }
+});
+
 router.get("/p/:page", async (req, res) => {
   const page = req.params.page;
   const db = await getDB();
