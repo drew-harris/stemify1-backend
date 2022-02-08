@@ -13,7 +13,10 @@ export async function getInfo(url: string) {
     const queryArtist = info.media.artist || "";
     songData = await spotify.getSongData(queryTitle + " " + queryArtist, false);
   } else {
-    songData = await spotify.getSongData(info.title, false);
+    songData = await spotify.getSongData(
+      info.title + " " + info.ownerChannelName,
+      false
+    );
   }
   return songData;
 }
