@@ -99,13 +99,13 @@ router.get("/:id", async (req, res) => {
       let active = latest.length > 0 ? true : false;
 
       res.json({
-        song: null,
+        song: result || null,
         lineLength: await cursor.count(),
         demucsRunning: active,
       });
     } else {
       res.json({
-        song: null,
+        song: result || null,
         lineLength: 0,
       });
     }
