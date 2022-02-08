@@ -75,8 +75,8 @@ router.get("/:id", async (req, res) => {
     // If no result found
     if (!result) {
       res.status(404).send("Song not found");
+      return;
     }
-    return;
 
     if (result.complete) {
       res.json({ song: result });
