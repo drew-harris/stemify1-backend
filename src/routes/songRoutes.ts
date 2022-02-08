@@ -7,6 +7,7 @@ router.get("/", async (_, res) => {
   db.collection("songs")
     .find({
       complete: true,
+      approved: true,
     })
     .sort({
       timeSubmitted: -1,
@@ -28,6 +29,7 @@ router.get("/p/:page", async (req, res) => {
   db.collection("songs")
     .find({
       complete: true,
+      approved: true,
     })
     .sort({
       timeSubmitted: -1,
@@ -55,7 +57,9 @@ router.post("/search", async (req, res) => {
     const results = await db
       .collection("songs")
       .aggregate([
-        { $match: { $text: { $search: query } } },
+        {
+          $match: { $text: { $search: query }, approved: true, complete: true },
+        },
         { $sort: { score: { $meta: "textScore" } } },
       ])
       .toArray();

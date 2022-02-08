@@ -32,9 +32,17 @@ async function main() {
       try {
         let filter;
         if (req.body.id) {
-          filter = { "metadata.artistId": req.body.id || "zzzzz" };
+          filter = {
+            "metadata.artistId": req.body.id || "zzzzz",
+            complete: true,
+            approved: true,
+          };
         } else {
-          filter = { "metadata.artist": req.body.name };
+          filter = {
+            "metadata.artist": req.body.name,
+            complete: true,
+            approved: true,
+          };
         }
         const db = await getDB();
         const discog = await db
@@ -55,9 +63,17 @@ async function main() {
       try {
         let filter;
         if (req.body.id) {
-          filter = { "metadata.albumId": req.body.id || "zzzzz" };
+          filter = {
+            "metadata.albumId": req.body.id || "zzzzz",
+            approved: true,
+            complete: true,
+          };
         } else {
-          filter = { "metadata.albumTitle": req.body.name };
+          filter = {
+            "metadata.albumTitle": req.body.name,
+            approved: true,
+            complete: true,
+          };
         }
         const db = await getDB();
         const album = await db
@@ -86,6 +102,19 @@ async function main() {
         res.json(songs);
       } catch (error) {
         res.status(500).send(error);
+      }
+    });
+
+    app.get("/trackmigration", async (_, res) => {
+      try {
+        const db = await getDB();
+        await db
+          .collection("songs")
+          .updateMany({}, { $set: { approved: true } });
+        res.send("Done");
+      } catch (error) {
+        console.log(error);
+        res.json({ message: "ERROR" });
       }
     });
 

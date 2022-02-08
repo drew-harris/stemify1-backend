@@ -139,6 +139,22 @@ async function getBpm(spotifyId: string) {
   return data.tempo;
 }
 
+export async function getTrackNum(id) {
+  const token = await getToken();
+  const result = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
+  if (!(await result).ok) {
+    console.log(result);
+    throw new Error("Unable to get BPM");
+  }
+  const data = await result.json();
+  return data.track_number;
+}
+
 function getSongName(filename) {
   let termArray = filename
     .toLowerCase()
