@@ -112,7 +112,7 @@ async function main() {
         const db = await getDB();
         await db
           .collection("songs")
-          .updateMany({}, { $set: { approved: true } });
+          .updateMany({}, { $set: { youtubeUrl: null } });
         res.send("Done");
       } catch (error) {
         console.log(error);

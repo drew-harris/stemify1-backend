@@ -23,7 +23,11 @@ export async function checkForSongs(songData: any) {
   }
 }
 
-export async function makeSong(data: any, extension: string) {
+export async function makeSong(
+  data: any,
+  extension: string,
+  youtubeLink = null
+) {
   const songId = new Mongo.ObjectId();
   const ticketId = new Mongo.ObjectId();
 
@@ -62,6 +66,7 @@ export async function makeSong(data: any, extension: string) {
     other: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
 
     extension: extension || "mp3",
+    youtubeUrl: youtubeLink || null,
     complete: false,
     approved: false,
     ticketId: ticketId,

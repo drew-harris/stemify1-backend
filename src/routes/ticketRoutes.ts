@@ -30,10 +30,14 @@ router.post("/youtube", multer.none(), async (req, res) => {
     return;
   }
 
+  if (!req.body.url) {
+    throw new Error("No url provided");
+  }
+
   // Set song in database
   let song;
   try {
-    song = await songs.makeSong(data, "mp3");
+    song = await songs.makeSong(data, "mp3", req.body.url);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -73,7 +77,9 @@ router.get("/:id", async (req, res) => {
     } else {
       res.json({ song: result });
     }
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).send("Unable to get ticket");
+  }
 });
 
 router.post("/file", multer.single("file"), async (req, res) => {
