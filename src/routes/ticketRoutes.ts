@@ -73,9 +73,22 @@ router.get("/:id", async (req, res) => {
       ticketId: new Mongo.ObjectId(req.params.id),
     });
     if (result.complete) {
-      res.json({ song: null });
-    } else {
       res.json({ song: result });
+    } else if (result?.timeSubmitted) {
+      const cursor = await db.collection("tickets").find({
+        complete: false,
+        timeSubmitted: { $lt: result.timeSubmitted },
+      });
+      console.log(await cursor.count());
+      res.json({
+        song: null,
+        lineLength: await cursor.count(),
+      });
+    } else {
+      res.json({
+        song: null,
+        lineLength: 0,
+      });
     }
   } catch (error) {
     res.status(500).send("Unable to get ticket");
