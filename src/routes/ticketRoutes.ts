@@ -72,6 +72,12 @@ router.get("/:id", async (req, res) => {
     const result = await db.collection("songs").findOne({
       ticketId: new Mongo.ObjectId(req.params.id),
     });
+    // If no result found
+    if (!result) {
+      res.status(404).send("Song not found");
+    }
+    return;
+
     if (result.complete) {
       res.json({ song: result });
     } else if (result?.timeSubmitted) {
