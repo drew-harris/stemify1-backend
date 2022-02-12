@@ -24,6 +24,20 @@ router.get("/", async (_, res) => {
     });
 });
 
+router.get("/:id", async (req, res) => {
+  const db = await getDB();
+  db.collection("songs")
+    .findOne({
+      _id: new mongo.ObjectId(req.params.id),
+    })
+    .then((doc) => {
+      res.json(doc);
+    })
+    .catch((err) => {
+      res.status(404).send("Song not found");
+    });
+});
+
 router.get("/howmany", async (_, res) => {
   try {
     const db = await getDB();
