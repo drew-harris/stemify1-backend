@@ -31,6 +31,18 @@ router.get("/approve", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  try {
+    const db = await getDB();
+    await db
+      .collection("songs")
+      .deleteOne({ _id: new Mongo.ObjectId(req.params.id) });
+    res.send("Song deleted");
+  } catch (error) {
+    res.status(500).send("There was an error deleting the song");
+  }
+});
+
 router.post("/approve/all", async (req, res) => {
   try {
     const db = await getDB();
