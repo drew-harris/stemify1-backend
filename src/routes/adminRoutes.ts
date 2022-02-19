@@ -23,6 +23,7 @@ router.get("/approve", async (req, res) => {
         adminHidden: false,
         approved: false,
       })
+      .sort({ timeSubmitted: -1 })
       .limit(100)
       .toArray();
     res.json(songs);
