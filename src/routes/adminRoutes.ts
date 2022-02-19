@@ -20,7 +20,6 @@ router.get("/approve", async (req, res) => {
     const songs = await db
       .collection("songs")
       .find({
-        complete: true,
         adminHidden: false,
         approved: false,
       })
@@ -35,9 +34,17 @@ router.get("/approve", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const db = await getDB();
+    const song = await db
+      .collection("songs")
+      .findOne({ _id: new Mongo.ObjectId(req.params.id) });
+    const ticketId = song.ticketId;
     await db
       .collection("songs")
       .deleteOne({ _id: new Mongo.ObjectId(req.params.id) });
+
+    await db
+      .collection("tickets")
+      .deleteOne({ _id: new Mongo.ObjectId(ticketId) });
     res.send("Song deleted");
   } catch (error) {
     res.status(500).send("There was an error deleting the song");
