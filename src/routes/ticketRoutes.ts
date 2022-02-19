@@ -23,6 +23,7 @@ router.post("/youtube", multer.none(), async (req, res) => {
     res.status(500).send("Could not get song data");
     return;
   }
+
   try {
     await songs.checkForSongs(data);
   } catch (error) {

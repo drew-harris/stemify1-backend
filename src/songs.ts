@@ -71,6 +71,7 @@ export async function makeSong(
     complete: false,
     approved: false,
     ticketId: ticketId,
+    adminHidden: false,
   };
 
   const ticket = {

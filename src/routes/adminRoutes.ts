@@ -21,6 +21,7 @@ router.get("/approve", async (req, res) => {
       .collection("songs")
       .find({
         complete: true,
+        adminHidden: false,
         approved: false,
       })
       .limit(100)
@@ -68,6 +69,35 @@ router.post("/approve/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send("There was an error approving the song");
+  }
+});
+
+router.post("/hide/:id", async (req, res) => {
+  try {
+    const db = await getDB();
+    const id: string = req.params.id;
+    console.log(id);
+    db.collection("songs").updateOne(
+      { _id: new Mongo.ObjectId(id) },
+      { $set: { adminHidden: true } }
+    );
+    res.send("Song hidden");
+  } catch (error) {
+    res.status(500).send("There was an error hiding the song");
+  }
+});
+
+router.get("/queue", async (req, res) => {
+  try {
+    const db = await getDB();
+    const songsInQueue = await db
+      .collection("songs")
+      .find({ complete: false, adminHidden: false, approved: false })
+      .toArray();
+
+    res.json(songsInQueue);
+  } catch (error) {
+    res.status(500).send("There was an error getting the queue");
   }
 });
 
