@@ -82,6 +82,7 @@ export async function makeSong(
     extension: song.extension,
     pending: false,
     complete: false,
+    songId: songId,
   };
 
   try {
