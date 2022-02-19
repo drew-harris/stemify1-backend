@@ -31,6 +31,24 @@ router.post("/youtube", multer.none(), async (req, res) => {
     return;
   }
 
+  try {
+    const db = await getDB();
+    // Find songs with same album name uploaded in the last 20 minutes
+    const songs = await db
+      .collection("songs")
+      .find({
+        "metadata.albumTitle": data.metadata.albumTitle,
+        complete: false,
+      })
+      .toArray();
+    if (songs.length > 0) {
+      res.status(418).send("Beach House Method");
+      return;
+    }
+  } catch (error) {
+    res.status(500).send("Could not check for duplicate songs");
+  }
+
   if (!req.body.url) {
     throw new Error("No url provided");
   }
@@ -117,6 +135,25 @@ router.get("/:id", async (req, res) => {
 
 router.post("/file", multer.single("file"), async (req, res) => {
   const data = JSON.parse(req.body.data);
+  console.log(data);
+  try {
+    const db = await getDB();
+    // Find songs with same album name uploaded in the last 20 minutes
+    const songs = await db
+      .collection("songs")
+      .find({
+        "metadata.albumTitle": data.metadata.albumTitle,
+        complete: false,
+        // timeSubmitted: { $gt: new Date(Date.now() - 20 * 60 * 1000) },
+      })
+      .toArray();
+    if (songs.length > 0) {
+      res.status(418).send("Beach House Method");
+      return;
+    }
+  } catch (error) {
+    res.status(500).send("Could not check for duplicate songs");
+  }
 
   try {
     await songs.checkForSongs(data);
