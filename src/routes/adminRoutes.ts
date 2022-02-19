@@ -20,10 +20,10 @@ router.get("/approve", async (req, res) => {
     const songs = await db
       .collection("songs")
       .find({
+        complete: true,
         adminHidden: false,
         approved: false,
       })
-      .sort({ timeSubmitted: -1 })
       .limit(100)
       .toArray();
     res.json(songs);
