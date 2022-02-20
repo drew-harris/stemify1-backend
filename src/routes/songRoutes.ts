@@ -121,7 +121,7 @@ router.post("/download/:id", async (req, res) => {
       },
       {
         $set: {
-          downloadCount: {
+          downloads: {
             $inc: 1,
           },
         },
