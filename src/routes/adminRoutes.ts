@@ -32,6 +32,25 @@ router.get("/approve", async (req, res) => {
   }
 });
 
+router.post("/albumart/:id", async (req, res) => {
+  try {
+    if (!req.body.albumArt) {
+      res.status(400).send("No album art provided");
+    }
+    const db = await getDB();
+    const songId = new Mongo.ObjectId(req.params.id);
+    await db
+      .collection("songs")
+      .updateOne(
+        { _id: songId },
+        { $set: { "metadata.albumArt": req.body.albumArt } }
+      );
+    res.send("Album art updated");
+  } catch (error) {
+    res.status(500).send("Error updating album art");
+  }
+});
+
 router.delete("/:id", async (req, res) => {
   try {
     const db = await getDB();
