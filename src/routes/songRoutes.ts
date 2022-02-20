@@ -120,10 +120,8 @@ router.post("/download/:id", async (req, res) => {
         _id: new mongo.ObjectId(id),
       },
       {
-        $set: {
-          downloads: {
-            $inc: 1,
-          },
+        $inc: {
+          downloads: 1,
         },
       }
     );
