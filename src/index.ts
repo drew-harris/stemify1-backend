@@ -109,10 +109,28 @@ async function main() {
       }
     });
 
+    const transformUrl = (url) => {
+      return url.replace(
+        "https://storage.stemify.io/",
+        "https://storage.stemify.io/"
+      );
+    };
+
     app.get("/trackmigration", async (_, res) => {
       try {
         const db = await getDB();
-        await db.collection("songs").updateMany({}, { $set: { downloads: 0 } });
+        const cursor = await db.collection("songs").find({});
+        while (await cursor.hasNext()) {
+          const song = await cursor.next();
+
+          song.vocals = transformUrl(song.vocals);
+          song.drums = transformUrl(song.drums);
+          song.bass = transformUrl(song.bass);
+          song.other = transformUrl(song.other);
+          db.collection("songs").replaceOne({ _id: song._id }, song, {
+            upsert: true,
+          });
+        }
         res.send("Done");
       } catch (error) {
         console.log(error);

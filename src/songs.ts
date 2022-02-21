@@ -61,10 +61,10 @@ export async function makeSong(
     },
     bpm: data.bpm || 120,
 
-    vocals: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/vocals.${extension}`,
-    bass: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/bass.${extension}`,
-    drums: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/drums.${extension}`,
-    other: `https://storage.googleapis.com/stem-share-demucs-output/${slug}/other.${extension}`,
+    vocals: `https://storage.stemify.io/${slug}/vocals.${extension}`,
+    bass: `https://storage.stemify.io/${slug}/bass.${extension}`,
+    drums: `https://storage.stemify.io/${slug}/drums.${extension}`,
+    other: `https://storage.stemify.io/${slug}/other.${extension}`,
 
     extension: extension || "mp3",
     youtubeUrl: youtubeLink || null,
