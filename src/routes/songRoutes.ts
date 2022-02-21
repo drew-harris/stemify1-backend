@@ -46,7 +46,6 @@ router.get("/status/howmany", async (_, res) => {
       inQueue: 0,
       approved: 0,
       needsApproval: 0,
-      newToday: "WIP",
       totalDownloads: 0,
     };
 
@@ -60,6 +59,21 @@ router.get("/status/howmany", async (_, res) => {
     info.needsApproval = await db.collection("songs").countDocuments({
       approved: false,
     });
+
+    const downloads = await db
+      .collection("songs")
+      .aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$downloads" },
+          },
+        },
+      ])
+      .toArray();
+    console.log(downloads);
+    info.totalDownloads = downloads[0].total;
+
     res.json(info);
   } catch (error) {
     res.status(500).send("Could not get song count");
