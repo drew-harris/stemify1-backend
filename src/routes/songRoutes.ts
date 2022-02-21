@@ -45,6 +45,7 @@ router.get("/status/howmany", async (_, res) => {
       total: 0,
       inQueue: 0,
       approved: 0,
+      needsApproval: 0,
       newToday: "WIP",
       totalDownloads: 0,
     };
@@ -55,6 +56,9 @@ router.get("/status/howmany", async (_, res) => {
     });
     info.approved = await db.collection("songs").countDocuments({
       approved: true,
+    });
+    info.needsApproval = await db.collection("songs").countDocuments({
+      approved: false,
     });
     res.json(info);
   } catch (error) {
