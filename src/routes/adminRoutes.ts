@@ -33,6 +33,21 @@ router.get("/approve", async (req, res) => {
   }
 });
 
+router.get("/allsongs", async (req, res) => {
+  try {
+    const db = await getDB();
+    const songs = await db
+      .collection("songs")
+      .find({})
+      .sort({ timeSubmitted: -1 })
+      .limit(200)
+      .toArray();
+    res.json(songs);
+  } catch (error) {
+    res.status(500).send("There was an error getting all songs");
+  }
+});
+
 router.post("/search", async (req, res) => {
   const query = req.body.query;
   if (!query) {
