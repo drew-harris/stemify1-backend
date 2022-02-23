@@ -112,14 +112,18 @@ async function main() {
     const transformUrl = (url) => {
       return url.replace(
         "https://storage.stemify.io/",
-        "https://storage.stemify.io/"
+        "https://storage.googleapis.com/stem-share-demucs-output/"
       );
     };
 
     app.get("/trackmigration", async (_, res) => {
       try {
         const db = await getDB();
-        const cursor = await db.collection("songs").find({});
+        const cursor = await db
+          .collection("songs")
+          .find({})
+          .sort({ timeSubmitted: -1 })
+          .limit(5);
         while (await cursor.hasNext()) {
           const song = await cursor.next();
 
